@@ -60,6 +60,32 @@ services:
     links:
       - mongo
 
+  politics_news_service:
+    image: politics_news_service
+    build: ./PoliticsNewsService
+    volumes:
+      - '.:/usr/src/app'
+    environment:
+      - APP_SETTINGS=config.DevelopmentConfig
+      - DATABASE_HOST=mongodb://mongo:27017/
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
+  sports_news_service:
+    image: sports_news_service
+    build: ./SportsNewsService
+    volumes:
+      - '.:/usr/src/app'
+    environment:
+      - APP_SETTINGS=config.DevelopmentConfig
+      - DATABASE_HOST=mongodb://mongo:27017/
+    depends_on:
+      - mongo
+    links:
+      - mongo
+
   proxy:
     container_name: loadbalance
     build: ./nginx
@@ -68,3 +94,5 @@ services:
     links:
       - userservice
       - famous_news_service
+      - politics_news_service
+      - sports_news_service
