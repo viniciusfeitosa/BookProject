@@ -10,7 +10,7 @@ from models import News
 famous_news = Blueprint('famous_news', __name__)
 
 
-@famous_news.route('/news/<string:news_id>', methods=['GET'])
+@famous_news.route('/famous/news/<string:news_id>', methods=['GET'])
 def get_single_news(news_id):
     """Get single user details"""
     response_object = {
@@ -28,7 +28,7 @@ def get_single_news(news_id):
         return jsonify(response_object), 404
 
 
-@famous_news.route('/news/<int:num_page>/<int:limit>', methods=['GET'])
+@famous_news.route('/famous/news/<int:num_page>/<int:limit>', methods=['GET'])
 def get_all_news(num_page, limit):
     """Get all users"""
     news = News.objects.paginate(page=num_page, per_page=limit)
@@ -39,7 +39,7 @@ def get_all_news(num_page, limit):
     return jsonify(response_object), 200
 
 
-@famous_news.route('/news', methods=['POST'])
+@famous_news.route('/famous/news', methods=['POST'])
 def add_news():
     post_data = request.get_json()
     if not post_data:
@@ -61,7 +61,7 @@ def add_news():
     return jsonify(response_object), 201
 
 
-@famous_news.route('/news/<string:news_id>/publish/', methods=['GET'])
+@famous_news.route('/famous/news/<string:news_id>/publish/', methods=['GET'])
 def publish_news(news_id):
     try:
         news = News.objects.get(id=news_id)
@@ -76,7 +76,7 @@ def publish_news(news_id):
         return jsonify(response_object), 404
 
 
-@famous_news.route('/news', methods=['PUT'])
+@famous_news.route('/famous/news', methods=['PUT'])
 def update_news():
     try:
         post_data = request.get_json()
@@ -97,7 +97,7 @@ def update_news():
         return jsonify(response_object), 404
 
 
-@famous_news.route('/news/<string:news_id>', methods=['DELETE'])
+@famous_news.route('/famous/news/<string:news_id>', methods=['DELETE'])
 def delete_news(news_id):
     News.objects(id=news_id).delete()
     response_object = {
