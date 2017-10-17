@@ -6,8 +6,10 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-ENTRYPOINT ["python"]
+RUN python dbmanage.py
 
-CMD ["app.py"]
+ENTRYPOINT ["nameko"]
 
-EXPOSE 5000
+CMD ["run", "--config",  "config.yaml", "service"]
+
+EXPOSE 8000
