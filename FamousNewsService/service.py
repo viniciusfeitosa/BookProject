@@ -16,9 +16,13 @@ class Command:
     dispatch = EventDispatcher()
 
     @rpc
-    def create_news(self, data):
+    def add_news(self, data):
         try:
+            news_version = 1
+            if data.get('news_version'):
+                news_version = data.get('news_version') + 1
             news = CommandNewsModel(
+                news_version=news_version,
                 title=data['title'],
                 content=data['content'],
                 author=data['author'],

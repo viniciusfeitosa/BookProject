@@ -54,7 +54,7 @@ def add_news(news_type):
         return jsonify(response_object), 400
     with ClusterRpcProxy(CONFIG_RPC) as rpc:
         import ipdb; ipdb.set_trace()
-        news = rpc.command_famous.create_news(post_data)
+        news = rpc.command_famous.add_news(post_data)
         response_object = {
             'status': 'success',
             'news': News().dumps(news).data,
@@ -70,7 +70,7 @@ def publish_news(news_type, news_id):
         data = rpc.query_famous.get_news(news_id)
         data = News().dumps(data).data
         data['published_at'] = datetime.datetime.utcnow
-        news = rpc.command_famous.create_news(data)
+        news = rpc.command_famous.add_news(data)
         response_object = {
             'status': 'success',
             'news': News().dumps(news).data,
@@ -88,7 +88,7 @@ def update_news(news_type):
         }
         return jsonify(response_object), 400
     with ClusterRpcProxy(CONFIG_RPC) as rpc:
-        news = rpc.command_famous.create_news(post_data)
+        news = rpc.command_famous.add_news(post_data)
         response_object = {
             'status': 'success',
             'news': News().dumps(news).data,

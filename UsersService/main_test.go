@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/viniciusfeitosa/UserService"
+	"github.com/viniciusfeitosa/BookProject/UsersService"
 )
 
 var a main.App

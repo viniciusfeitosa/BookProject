@@ -20,7 +20,6 @@ from sqlalchemy import (
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_utils import UUIDType
 
 db_engine = create_engine(os.environ.get('COMMANDDB_DEV_HOST'))
 base = declarative_base()
@@ -31,8 +30,8 @@ session = Session()
 class CommandNewsModel(base):
     __tablename__ = 'news'
 
-    news_id = Column(UUIDType(), primary_key=True)
-    news_version = Column(BigInteger, primary_key=True, autoincrement=True)
+    news_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    news_version = Column(BigInteger, primary_key=True)
     title = Column(String(length=200))
     content = Column(String)
     author = Column(String(length=50))
