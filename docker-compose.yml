@@ -5,6 +5,9 @@ services:
   rabbitmq:
     image: rabbitmq
     build: ./queue
+    ports:
+        - "15672:15672"
+        - "5672:5672"
     restart: always
 
   redis:
@@ -33,7 +36,7 @@ services:
     container_name: users-service-db
     build: ./UsersService/db
     ports:
-      - 5435:5432  # expose ports - HOST:CONTAINER
+      - 5432:5432  # expose ports - HOST:CONTAINER
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -69,10 +72,13 @@ services:
   orchestrator_news_service:
     image: orchestrator_news_service
     build: ./NewsOrcherstrator
+    ports:
+      - "5001:5000"
     volumes:
       - '.:/usr/src/app'
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
     depends_on:
       - famous_news_service
       - rabbitmq
@@ -88,12 +94,16 @@ services:
 
   querydb_famous:
     image: querydb_famous
-    build: ./FamousNewsService/query/db
+    build: ./FamousNewsService/query_db/
+    ports:
+      - "5433:5432"
     restart: always
 
   commanddb_famous:
     image: commanddb_famous
-    build: ./FamousNewsService/command/db
+    build: ./FamousNewsService/command_db/
+    ports:
+      - "27018:27017"
     restart: always
     healthcheck:
       test: exit 0

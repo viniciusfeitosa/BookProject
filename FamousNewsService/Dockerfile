@@ -6,8 +6,6 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-RUN python dbmanage.py
-
 ENTRYPOINT ["nameko"]
 
 CMD ["run", "--config",  "config.yaml", "service"]

@@ -2,3 +2,5 @@ nameko
 mongoengine
 sqlalchemy
 sqlalchemy-utils
+psycopg2
+ipdb

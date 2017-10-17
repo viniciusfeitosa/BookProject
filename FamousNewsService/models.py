@@ -1,6 +1,13 @@
 import os
 from datetime import datetime
-from mongoengine import MongoEngine
+from mongoengine import (
+    connect,
+    Document,
+    DateTimeField,
+    ListField,
+    IntField,
+    StringField,
+)
 
 from sqlalchemy import create_engine
 from sqlalchemy import (
@@ -15,9 +22,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import UUIDType
 
-db_string = os.environ.get('COMMAND_DEV_HOST')
-
-db_engine = create_engine(db_string)
+db_engine = create_engine(os.environ.get('COMMANDDB_DEV_HOST'))
 base = declarative_base()
 Session = sessionmaker(db_engine)
 session = Session()
@@ -39,16 +44,15 @@ class CommandNewsModel(base):
     __table_args__ = Index('index', 'news_id', 'news_version'),
 
 
-mongo_db = MongoEngine()
-mongo_db.init_app(os.environ.get('QUERYBD_HOST'))
+connect('famous', host=os.environ.get('QUERYBD_HOST'))
 
 
-class QueryNewsModel(mongo_db.Document):
-    news_version = mongo_db.IntegerField(required=True)
-    title = mongo_db.StringField(required=True, max_length=200)
-    content = mongo_db.StringField(required=True)
-    author = mongo_db.StringField(required=True, max_length=50)
-    created_at = mongo_db.DateTimeField(default=datetime.datetime.now)
-    published_at = mongo_db.DateTimeField()
-    news_type = mongo_db.StringField(default="famous")
-    tags = mongo_db.ListField(mongo_db.StringField(max_length=50))
+class QueryNewsModel(Document):
+    news_version = IntField(required=True)
+    title = StringField(required=True, max_length=200)
+    content = StringField(required=True)
+    author = StringField(required=True, max_length=50)
+    created_at = DateTimeField(default=datetime.utcnow)
+    published_at = DateTimeField()
+    news_type = StringField(default="famous")
+    tags = ListField(StringField(max_length=50))

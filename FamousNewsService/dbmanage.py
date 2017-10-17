@@ -4,17 +4,17 @@ from sqlalchemy import create_engine
 
 
 def create_db():
-    db = create_engine(os.getenv("COMMANDDB_HOST"))
+    db = create_engine(os.environ.get("COMMANDDB_HOST"))
     base.metadata.create_all(db)
 
 
 def create_dev_db():
-    db = create_engine(os.getenv("COMMANDDB_DEV_HOST"))
+    db = create_engine(os.environ.get("COMMANDDB_DEV_HOST"))
     base.metadata.create_all(db)
 
 
 def create_test_db():
-    db = create_engine(os.getenv("COMMANDDB_TEST_HOST"))
+    db = create_engine(os.environ.get("COMMANDDB_TEST_HOST"))
     base.metadata.create_all(db)
 
 
