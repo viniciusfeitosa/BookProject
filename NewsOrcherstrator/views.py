@@ -11,7 +11,7 @@ news = Blueprint('news', __name__)
 CONFIG_RPC = {'AMQP_URI': os.environ.get('QUEUE_HOST')}
 
 
-@news.route('/news/<string:news_type>/<string:news_id>', methods=['GET'])
+@news.route('/news/<string:news_type>/<int:news_id>', methods=['GET'])
 def get_single_news(news_type, news_id):
     """Get single user details"""
     response_object = {
@@ -19,8 +19,10 @@ def get_single_news(news_type, news_id):
         'message': 'User does not exist'
     }
     with ClusterRpcProxy(CONFIG_RPC) as rpc:
+        import ipdb
+        ipdb.set_trace()
         news = rpc.query_famous.get_news(news_id)
-        response_object['message'] = News().dumps(news).data
+        response_object['message'] = news
         return jsonify(response_object), 200
 
 
@@ -30,14 +32,12 @@ def get_single_news(news_type, news_id):
 def get_all_news(news_type, num_page, limit):
     """Get all users"""
     with ClusterRpcProxy(CONFIG_RPC) as rpc:
+        import ipdb
+        ipdb.set_trace()
         news = rpc.query_famous.get_all_news(num_page, limit)
-        news_list = [
-            News().dumps(n).data
-            for n in news
-        ]
         response_object = {
             'status': 'success',
-            'data': news_list,
+            'data': news,
         }
     return jsonify(response_object), 200
 
@@ -53,27 +53,30 @@ def add_news(news_type):
         }
         return jsonify(response_object), 400
     with ClusterRpcProxy(CONFIG_RPC) as rpc:
-        import ipdb; ipdb.set_trace()
+        import ipdb
+        ipdb.set_trace()
         news = rpc.command_famous.add_news(post_data)
         response_object = {
             'status': 'success',
-            'news': News().dumps(news).data,
+            'news': news,
         }
         return jsonify(response_object), 201
 
 
 @news.route(
-    '/news/<string:news_type>/<string:news_id>/publish/',
+    '/news/<string:news_type>/<int:news_id>/publish/',
     methods=['GET'])
 def publish_news(news_type, news_id):
     with ClusterRpcProxy(CONFIG_RPC) as rpc:
+        import ipdb
+        ipdb.set_trace()
         data = rpc.query_famous.get_news(news_id)
         data = News().dumps(data).data
         data['published_at'] = datetime.datetime.utcnow
         news = rpc.command_famous.add_news(data)
         response_object = {
             'status': 'success',
-            'news': News().dumps(news).data,
+            'news': news,
         }
         return jsonify(response_object), 200
 
@@ -88,9 +91,11 @@ def update_news(news_type):
         }
         return jsonify(response_object), 400
     with ClusterRpcProxy(CONFIG_RPC) as rpc:
+        import ipdb
+        ipdb.set_trace()
         news = rpc.command_famous.add_news(post_data)
         response_object = {
             'status': 'success',
-            'news': News().dumps(news).data,
+            'news': news,
         }
         return jsonify(response_object), 200

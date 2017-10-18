@@ -30,10 +30,11 @@ class Command:
                 tags=data['tags'],
             )
             session.add(news)
+            session.commit()
+            data['id'] = news.id
             data['news_version'] = news.news_version
             self.dispatch('replicate_db_event', data)
-            session.commit()
-            return news
+            return data
         except Exception as e:
             return e
 
@@ -45,9 +46,10 @@ class Query:
     def normalize_db(self, data):
         try:
             news = QueryNewsModel.objects.get(
-                news_version=data['news_version']
+                id=data['news_version']
             )
             news.update(
+                news_version=data.get('news_version', news.news_version),
                 title=data.get('title', news.title),
                 content=data.get('content', news.content),
                 author=data.get('author', news.author),
@@ -57,6 +59,8 @@ class Query:
             news.reload()
         except mongoengine.DoesNotExist:
             QueryNewsModel(
+                id=data['id'],
+                news_version=data['news_version'],
                 title=data.get('title'),
                 content=data.get('content'),
                 author=data.get('author'),
@@ -66,12 +70,10 @@ class Query:
             return e
 
     @rpc
-    def get_news(self, news_id):
+    def get_news(self, id):
         try:
-            news = QueryNewsModel.objects.get(
-                news_id=news_id
-            )
-            return news
+            news = QueryNewsModel.objects.get(id=id)
+            return news.to_json()
         except mongoengine.DoesNotExist as e:
             return e
         except Exception as e:
@@ -80,10 +82,10 @@ class Query:
     @rpc
     def get_all_news(self, num_page, limit):
         try:
-            news = QueryNewsModel.objects.paginate(
-                page=num_page,
-                per_page=limit,
-            )
-            return news
+            if not num_page:
+                num_page = 1
+            offset = (num_page - 1) * limit
+            news = QueryNewsModel.objects.skip(offset).limit(limit)
+            return news.to_json()
         except Exception as e:
             return e

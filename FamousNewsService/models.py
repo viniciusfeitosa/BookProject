@@ -30,7 +30,7 @@ session = Session()
 class CommandNewsModel(base):
     __tablename__ = 'news'
 
-    news_id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
     news_version = Column(BigInteger, primary_key=True)
     title = Column(String(length=200))
     content = Column(String)
@@ -40,13 +40,14 @@ class CommandNewsModel(base):
     news_type = Column(String, default='famous')
     tags = Column(postgresql.ARRAY(String))
 
-    __table_args__ = Index('index', 'news_id', 'news_version'),
+    __table_args__ = Index('index', 'id', 'news_version'),
 
 
 connect('famous', host=os.environ.get('QUERYBD_HOST'))
 
 
 class QueryNewsModel(Document):
+    id = IntField(primary_key=True)
     news_version = IntField(required=True)
     title = StringField(required=True, max_length=200)
     content = StringField(required=True)
