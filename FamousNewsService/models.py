@@ -40,7 +40,7 @@ class CommandNewsModel(base):
     news_type = Column(String, default='famous')
     tags = Column(postgresql.ARRAY(String))
 
-    __table_args__ = Index('index', 'id', 'news_version'),
+    __table_args__ = Index('index', 'id', 'version'),
 
 
 connect('famous', host=os.environ.get('QUERYBD_HOST'))

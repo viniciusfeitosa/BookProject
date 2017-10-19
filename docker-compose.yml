@@ -43,8 +43,8 @@ services:
     healthcheck:
       test: exit 0
 
-  userservice:
-    image: userservice
+  usersservice:
+    image: usersservice
     build: ./UsersService
     environment:
       - APP_RD_ADDRESS=redis:6379
@@ -179,7 +179,7 @@ services:
     ports:
       - "80:80"
     links:
-      - userservice
+      - usersservice
       - famous_news_service
       - politics_news_service
       - sports_news_service
