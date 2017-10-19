@@ -6,6 +6,8 @@ from models import (
     QueryNewsModel,
 )
 
+from sqlalchemy import Sequence
+
 from nameko.events import EventDispatcher
 from nameko.rpc import rpc
 from nameko.events import event_handler
@@ -18,11 +20,16 @@ class Command:
     @rpc
     def add_news(self, data):
         try:
-            news_version = 1
-            if data.get('news_version'):
-                news_version = data.get('news_version') + 1
+            version = 1
+            if data.get('version'):
+                version = (data.get('version') + 1)
+            if data.get('id'):
+                id = data.get('id')
+            else:
+                id = session.execute(Sequence('news_id_seq'))
             news = CommandNewsModel(
-                news_version=news_version,
+                id=id,
+                version=version,
                 title=data['title'],
                 content=data['content'],
                 author=data['author'],
@@ -32,10 +39,11 @@ class Command:
             session.add(news)
             session.commit()
             data['id'] = news.id
-            data['news_version'] = news.news_version
+            data['version'] = news.version
             self.dispatch('replicate_db_event', data)
             return data
         except Exception as e:
+            session.rollback()
             return e
 
 
@@ -46,21 +54,21 @@ class Query:
     def normalize_db(self, data):
         try:
             news = QueryNewsModel.objects.get(
-                id=data['news_version']
+                id=data['version']
             )
             news.update(
-                news_version=data.get('news_version', news.news_version),
+                version=data.get('version', news.version),
                 title=data.get('title', news.title),
                 content=data.get('content', news.content),
                 author=data.get('author', news.author),
-                published_at=data.get('published_at', news.author),
+                published_at=data.get('published_at', news.published_at),
                 tags=data.get('tags', news.tags),
             )
             news.reload()
         except mongoengine.DoesNotExist:
             QueryNewsModel(
                 id=data['id'],
-                news_version=data['news_version'],
+                version=data['version'],
                 title=data.get('title'),
                 content=data.get('content'),
                 author=data.get('author'),

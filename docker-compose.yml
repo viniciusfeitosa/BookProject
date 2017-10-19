@@ -69,13 +69,11 @@ services:
   # ----------------------------------------
   # ----------------------------------------
 
-  orchestrator_news_service:
-    image: orchestrator_news_service
+  orcherstrator_news_service:
+    image: orcherstrator_news_service
     build: ./NewsOrcherstrator
-    ports:
-      - "5001:5000"
     volumes:
-      - '.:/usr/src/app'
+      - './NewsOrcherstrator:/app'
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
@@ -112,7 +110,7 @@ services:
     image: famous_news_service
     build: ./FamousNewsService
     volumes:
-      - '.:/usr/src/app'
+      - './FamousNewsService:/app'
     environment:
       - QUERYBD_HOST=mongodb://querydb_famous:27017/
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
@@ -139,7 +137,7 @@ services:
     image: politics_news_service
     build: ./PoliticsNewsService
     volumes:
-      - '.:/usr/src/app'
+      - './PoliticsNewsService:/app'
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
       - DATABASE_HOST=mongodb://mongo:27017/
@@ -159,7 +157,7 @@ services:
     image: sports_news_service
     build: ./SportsNewsService
     volumes:
-      - '.:/usr/src/app'
+      - './SportsNewsService:/app'
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
       - DATABASE_HOST=mongodb://mongo:27017/

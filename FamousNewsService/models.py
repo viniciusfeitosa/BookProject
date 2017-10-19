@@ -30,8 +30,8 @@ session = Session()
 class CommandNewsModel(base):
     __tablename__ = 'news'
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
-    news_version = Column(BigInteger, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
+    version = Column(BigInteger, primary_key=True)
     title = Column(String(length=200))
     content = Column(String)
     author = Column(String(length=50))
@@ -48,7 +48,7 @@ connect('famous', host=os.environ.get('QUERYBD_HOST'))
 
 class QueryNewsModel(Document):
     id = IntField(primary_key=True)
-    news_version = IntField(required=True)
+    version = IntField(required=True)
     title = StringField(required=True, max_length=200)
     content = StringField(required=True)
     author = StringField(required=True, max_length=50)
