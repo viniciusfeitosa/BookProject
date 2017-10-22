@@ -1,5 +1,6 @@
 import os
 import json
+import itertools
 
 from flask import Blueprint, jsonify, request
 from nameko.standalone.rpc import ClusterRpcProxy
@@ -9,7 +10,7 @@ news = Blueprint('news', __name__)
 CONFIG_RPC = {'AMQP_URI': os.environ.get('QUEUE_HOST')}
 
 
-@news.route('/<string:news_type>/news/<int:news_id>', methods=['GET'])
+@news.route('/<string:news_type>/<int:news_id>', methods=['GET'])
 def get_single_news(news_type, news_id):
     """Get single user details"""
     try:
@@ -20,9 +21,43 @@ def get_single_news(news_type, news_id):
 
 
 @news.route(
-    '/<string:news_type>/news/<int:num_page>/<int:limit>',
+    '/all/<int:num_page>/<int:limit>',
     methods=['GET'])
-def get_all_news(news_type, num_page, limit):
+def get_all_news(num_page, limit):
+    try:
+        response_famous = rpc_get_all_news(
+            'famous',
+            num_page,
+            limit
+        )
+        response_politics = rpc_get_all_news(
+            'politics',
+            num_page,
+            limit
+        )
+        response_sports = rpc_get_all_news(
+            'sports',
+            num_page,
+            limit
+        )
+        all_news = itertools.chain(
+            response_famous.get('news', []),
+            response_politics.get('news', []),
+            response_sports.get('news', []),
+        )
+        response_object = {
+            'status': 'success',
+            'news': list(all_news),
+        }
+        return jsonify(response_object), 200
+    except Exception as e:
+        return erro_response(e, 500)
+
+
+@news.route(
+    '/<string:news_type>/<int:num_page>/<int:limit>',
+    methods=['GET'])
+def get_all_news_per_type(news_type, num_page, limit):
     """Get all users"""
     try:
         response_object = rpc_get_all_news(
@@ -35,7 +70,7 @@ def get_all_news(news_type, num_page, limit):
         return erro_response(e, 500)
 
 
-@news.route('/<string:news_type>/news', methods=['POST'])
+@news.route('/<string:news_type>', methods=['POST'])
 def add_news(news_type):
     post_data = request.get_json()
     if not post_data:
@@ -79,7 +114,7 @@ def rpc_get_news(news_type, news_id):
             return erro_response('Invalid News type', 400)
         return {
             'status': 'success',
-            'message': json.loads(news)
+            'news': json.loads(news)
         }
 
 
@@ -95,7 +130,7 @@ def rpc_get_all_news(news_type, num_page, limit):
             return erro_response('Invalid News type', 400)
         return {
             'status': 'success',
-            'message': json.loads(news)
+            'news': json.loads(news)
         }
 
 
