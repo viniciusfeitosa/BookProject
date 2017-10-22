@@ -9,7 +9,6 @@ from mongoengine import (
     StringField,
 )
 
-from sqlalchemy import create_engine
 from sqlalchemy import (
     Column,
     String,
@@ -19,15 +18,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-
-db_engine = create_engine(os.environ.get('COMMANDDB_DEV_HOST'))
-base = declarative_base()
-Session = sessionmaker(db_engine)
-session = Session()
 
 
-class CommandNewsModel(base):
+Base = declarative_base()
+
+
+class CommandNewsModel(Base):
     __tablename__ = 'news'
 
     id = Column(BigInteger, primary_key=True)

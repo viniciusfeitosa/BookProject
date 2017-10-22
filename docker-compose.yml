@@ -43,9 +43,9 @@ services:
       - APP_RD_AUTH=password
       - APP_RD_DBNAME=0
       - APP_SETTINGS=project.config.DevelopmentConfig
-      - DATABASE_URL=postgres://postgres:postgres@users-service-db:5432/users_prod?sslmode=disable
-      - DATABASE_DEV_URL=postgres://postgres:postgres@users-service-db:5432/users_dev?sslmode=disable
-      - DATABASE_TEST_URL=postgres://postgres:postgres@users-service-db:5432/users_test?sslmode=disable
+      - DATABASE_URL=postgresql://postgres:postgres@users-service-db:5432/users_prod?sslmode=disable
+      - DATABASE_DEV_URL=postgresql://postgres:postgres@users-service-db:5432/users_dev?sslmode=disable
+      - DATABASE_TEST_URL=postgresql://postgres:postgres@users-service-db:5432/users_test?sslmode=disable
     depends_on:
       users-service-db:
         condition: service_healthy
@@ -106,9 +106,9 @@ services:
     environment:
       - QUERYBD_HOST=mongodb://querydb_famous:27017/
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
-      - COMMANDDB_HOST=postgres://postgres:postgres@commanddb_famous:5432/news_prod?sslmode=disable
-      - COMMANDDB_DEV_HOST=postgres://postgres:postgres@commanddb_famous:5432/news_dev?sslmode=disable
-      - COMMANDDB_TEST_HOST=postgres://postgres:postgres@commanddb_famous:5432/news_test?sslmode=disable
+      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_prod?sslmode=disable
+      - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_dev?sslmode=disable
+      - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_test?sslmode=disable
     depends_on:
       - querydb_famous
       - commanddb_famous
@@ -149,9 +149,9 @@ services:
     environment:
       - QUERYBD_HOST=mongodb://querydb_politics:27017/
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
-      - COMMANDDB_HOST=postgres://postgres:postgres@commanddb_politics:5432/news_prod?sslmode=disable
-      - COMMANDDB_DEV_HOST=postgres://postgres:postgres@commanddb_politics:5432/news_dev?sslmode=disable
-      - COMMANDDB_TEST_HOST=postgres://postgres:postgres@commanddb_politics:5432/news_test?sslmode=disable
+      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_prod?sslmode=disable
+      - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_dev?sslmode=disable
+      - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_test?sslmode=disable
     depends_on:
       - querydb_politics
       - commanddb_politics
@@ -192,9 +192,9 @@ services:
     environment:
       - QUERYBD_HOST=mongodb://querydb_sports:27017/
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
-      - COMMANDDB_HOST=postgres://postgres:postgres@commanddb_sports:5432/news_prod?sslmode=disable
-      - COMMANDDB_DEV_HOST=postgres://postgres:postgres@commanddb_sports:5432/news_dev?sslmode=disable
-      - COMMANDDB_TEST_HOST=postgres://postgres:postgres@commanddb_sports:5432/news_test?sslmode=disable
+      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_prod?sslmode=disable
+      - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_dev?sslmode=disable
+      - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_test?sslmode=disable
     depends_on:
       - querydb_sports
       - commanddb_sports

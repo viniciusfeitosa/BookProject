@@ -1,8 +1,8 @@
 import mongoengine
 
 from models import (
-    session,
     CommandNewsModel,
+    Base,
     QueryNewsModel,
 )
 
@@ -11,11 +11,13 @@ from sqlalchemy import Sequence
 from nameko.events import EventDispatcher
 from nameko.rpc import rpc
 from nameko.events import event_handler
+from nameko_sqlalchemy import DatabaseSession
 
 
 class Command:
     name = 'command_famous'
     dispatch = EventDispatcher()
+    db = DatabaseSession(Base)
 
     @rpc
     def add_news(self, data):
@@ -26,7 +28,7 @@ class Command:
             if data.get('id'):
                 id = data.get('id')
             else:
-                id = session.execute(Sequence('news_id_seq'))
+                id = self.db.execute(Sequence('news_id_seq'))
             news = CommandNewsModel(
                 id=id,
                 version=version,
@@ -36,14 +38,14 @@ class Command:
                 published_at=data.get('published_at'),
                 tags=data['tags'],
             )
-            session.add(news)
-            session.commit()
+            self.db.add(news)
+            self.db.commit()
             data['id'] = news.id
             data['version'] = news.version
             self.dispatch('replicate_db_event', data)
             return data
         except Exception as e:
-            session.rollback()
+            self.db.rollback()
             return e
 
 

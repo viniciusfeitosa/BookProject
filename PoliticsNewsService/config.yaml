@@ -1,5 +1,8 @@
 AMQP_URI: 'amqp://guest:guest@rabbitmq'
 
+DB_URIS:
+    "command_politics:Base": ${COMMANDDB_DEV_HOST}
+
 LOGGING:
     version: 1
     handlers:
