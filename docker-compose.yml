@@ -18,17 +18,9 @@ services:
     healthcheck:
       test: exit 0
 
-  mongo:
-    image: mongo:latest
-    container_name: "mongodb"
-    ports:
-        - 27017:27017
-    command: mongod --smallfiles --logpath=/dev/null # --quiet
-
-  
   # ----------------------------------------
   # ----------------------------------------
-  # Users service configuration 
+  # Users service configuration
   # ----------------------------------------
   # ----------------------------------------
 
@@ -65,7 +57,7 @@ services:
 
   # ----------------------------------------
   # ----------------------------------------
-  # News Orchestrator service configuration 
+  # News Orchestrator service configuration
   # ----------------------------------------
   # ----------------------------------------
 
@@ -86,7 +78,7 @@ services:
 
   # ----------------------------------------
   # ----------------------------------------
-  # Famous service configuration 
+  # Famous service configuration
   # ----------------------------------------
   # ----------------------------------------
 
@@ -101,7 +93,7 @@ services:
     image: commanddb_famous
     build: ./FamousNewsService/command_db/
     ports:
-      - "27018:27017"
+      - "27017:27017"
     restart: always
     healthcheck:
       test: exit 0
@@ -129,9 +121,25 @@ services:
 
   # ----------------------------------------
   # ----------------------------------------
-  # Politics service configuration 
+  # Politics service configuration
   # ----------------------------------------
   # ----------------------------------------
+
+  querydb_politics:
+    image: querydb_politics
+    build: ./PoliticsNewsService/query_db/
+    ports:
+      - "5434:5432"
+    restart: always
+
+  commanddb_politics:
+    image: commanddb_politics
+    build: ./PoliticsNewsService/command_db/
+    ports:
+      - "27018:27017"
+    restart: always
+    healthcheck:
+      test: exit 0
 
   politics_news_service:
     image: politics_news_service
@@ -139,19 +147,42 @@ services:
     volumes:
       - './PoliticsNewsService:/app'
     environment:
-      - APP_SETTINGS=config.DevelopmentConfig
-      - DATABASE_HOST=mongodb://mongo:27017/
+      - QUERYBD_HOST=mongodb://querydb_politics:27017/
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - COMMANDDB_HOST=postgres://postgres:postgres@commanddb_politics:5432/news_prod?sslmode=disable
+      - COMMANDDB_DEV_HOST=postgres://postgres:postgres@commanddb_politics:5432/news_dev?sslmode=disable
+      - COMMANDDB_TEST_HOST=postgres://postgres:postgres@commanddb_politics:5432/news_test?sslmode=disable
     depends_on:
-      - mongo
+      - querydb_politics
+      - commanddb_politics
+      - rabbitmq
     links:
-      - mongo
+      - querydb_politics
+      - commanddb_politics
+      - rabbitmq
 
 
   # ----------------------------------------
   # ----------------------------------------
-  # Sports service configuration 
+  # Sports service configuration
   # ----------------------------------------
   # ----------------------------------------
+
+  querydb_sports:
+    image: querydb_sports
+    build: ./SportsNewsService/query_db/
+    ports:
+      - "5435:5432"
+    restart: always
+
+  commanddb_sports:
+    image: commanddb_sports
+    build: ./SportsNewsService/command_db/
+    ports:
+      - "27019:27017"
+    restart: always
+    healthcheck:
+      test: exit 0
 
   sports_news_service:
     image: sports_news_service
@@ -159,17 +190,24 @@ services:
     volumes:
       - './SportsNewsService:/app'
     environment:
-      - APP_SETTINGS=config.DevelopmentConfig
-      - DATABASE_HOST=mongodb://mongo:27017/
+      - QUERYBD_HOST=mongodb://querydb_sports:27017/
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - COMMANDDB_HOST=postgres://postgres:postgres@commanddb_sports:5432/news_prod?sslmode=disable
+      - COMMANDDB_DEV_HOST=postgres://postgres:postgres@commanddb_sports:5432/news_dev?sslmode=disable
+      - COMMANDDB_TEST_HOST=postgres://postgres:postgres@commanddb_sports:5432/news_test?sslmode=disable
     depends_on:
-      - mongo
+      - querydb_sports
+      - commanddb_sports
+      - rabbitmq
     links:
-      - mongo
+      - querydb_sports
+      - commanddb_sports
+      - rabbitmq
 
 
   # ----------------------------------------
   # ----------------------------------------
-  # NGINX configuration 
+  # NGINX configuration
   # ----------------------------------------
   # ----------------------------------------
 
@@ -180,6 +218,4 @@ services:
       - "80:80"
     links:
       - usersservice
-      - famous_news_service
-      - politics_news_service
-      - sports_news_service
+      - orcherstrator_news_service

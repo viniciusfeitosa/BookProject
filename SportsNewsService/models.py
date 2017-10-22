@@ -1,14 +1,58 @@
-import datetime
-from flask_mongoengine import MongoEngine
+import os
+from datetime import datetime
+from mongoengine import (
+    connect,
+    Document,
+    DateTimeField,
+    ListField,
+    IntField,
+    StringField,
+)
 
-db = MongoEngine()
+from sqlalchemy import create_engine
+from sqlalchemy import (
+    Column,
+    String,
+    BigInteger,
+    DateTime,
+    Index,
+)
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+db_engine = create_engine(os.environ.get('COMMANDDB_DEV_HOST'))
+base = declarative_base()
+Session = sessionmaker(db_engine)
+session = Session()
 
 
-class News(db.Document):
-    title = db.StringField(required=True, max_length=200)
-    content = db.StringField(required=True)
-    author = db.StringField(required=True, max_length=50)
-    created_at = db.DateTimeField(default=datetime.datetime.now)
-    published_at = db.DateTimeField()
-    news_type = db.StringField(default="sports")
-    tags = db.ListField(db.StringField(max_length=50))
+class CommandNewsModel(base):
+    __tablename__ = 'news'
+
+    id = Column(BigInteger, primary_key=True)
+    version = Column(BigInteger, primary_key=True)
+    title = Column(String(length=200))
+    content = Column(String)
+    author = Column(String(length=50))
+    created_at = Column(DateTime, default=datetime.utcnow)
+    published_at = Column(DateTime)
+    news_type = Column(String, default='famous')
+    tags = Column(postgresql.ARRAY(String))
+
+    __table_args__ = Index('index', 'id', 'version'),
+
+
+connect('famous', host=os.environ.get('QUERYBD_HOST'))
+
+
+class QueryNewsModel(Document):
+    id = IntField(primary_key=True)
+    version = IntField(required=True)
+    title = StringField(required=True, max_length=200)
+    content = StringField(required=True)
+    author = StringField(required=True, max_length=50)
+    created_at = DateTimeField(default=datetime.utcnow)
+    published_at = DateTimeField()
+    news_type = StringField(default="famous")
+    tags = ListField(StringField(max_length=50))

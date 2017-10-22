@@ -18,12 +18,7 @@ import (
 var a main.App
 
 func TestMain(m *testing.M) {
-	connectionString := fmt.Sprintf(
-		"user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("TEST_DB_USERNAME"),
-		os.Getenv("TEST_DB_PASSWORD"),
-		os.Getenv("TEST_DB_NAME"),
-	)
+	connectionString := os.Getenv("DATABASE_TEST_URL")
 	db, err := sqlx.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)
