@@ -3,7 +3,6 @@ import json
 import unittest
 
 from app import app
-from models import News
 
 from flask_testing import TestCase
 
@@ -45,26 +44,12 @@ class TestProductionConfig(TestCase):
 
 
 class TestNewsService(BaseTestCase):
-    def setUp(self):
-        for i in range(20):
-            News(
-                title='Title test-{}'.format(i),
-                content='Content test-{}'.format(i),
-                author='Author test-{}'.format(i),
-                tags=[
-                    'one-{}'.format(i),
-                    'two-{}'.format(i),
-                ],
-            ).save()
-
-    def tearDown(self):
-        News.objects().delete()
 
     def test_add_news(self):
         """Test to insert a News to the database."""
         with self.client:
             response = self.client.post(
-                '/famous/news',
+                '/famous',
                 data=json.dumps(dict(
                     title='My Test',
                     content='Just a service test',
@@ -88,14 +73,14 @@ class TestNewsService(BaseTestCase):
             ]
             for tc in test_cases:
                 response = self.client.get(
-                    '/famous/news/{}/{}'.format(
+                    '/famous/{}/{}'.format(
                         tc['page'], tc['num_per_page'])
                 )
                 data = json.loads(response.data.decode())
                 self.assertEqual(response.status_code, 200)
                 self.assertIn('success', data['status'])
-                self.assertEqual(len(data['data']), tc['num_per_page'])
-                for d in data['data']:
+                self.assertEqual(len(data['news']) > 0)
+                for d in data['news']:
                     self.assertEqual(
                         d['title'],
                         'Title test-{}'.format(tc['loop_couter'])
