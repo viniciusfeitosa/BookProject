@@ -82,7 +82,7 @@ def add_news(news_type):
         return erro_response(e, 500)
 
 
-@news.route('/<string:news_type>/news', methods=['PUT'])
+@news.route('/<string:news_type>', methods=['PUT'])
 def update_news(news_type):
     post_data = request.get_json()
     if not post_data:

@@ -56,7 +56,7 @@ class Query:
     def normalize_db(self, data):
         try:
             news = QueryNewsModel.objects.get(
-                id=data['version']
+                id=data['id']
             )
             news.update(
                 version=data.get('version', news.version),
