@@ -18,14 +18,6 @@ services:
     healthcheck:
       test: exit 0
 
-  neo4j:
-    image: neo4j:latest
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-    environment:
-      NEO4J_AUTH: "none"
-
   # ----------------------------------------
   # ----------------------------------------
   # Users service configuration
@@ -212,6 +204,35 @@ services:
       - commanddb_sports
       - rabbitmq
 
+
+  # ----------------------------------------
+  # ----------------------------------------
+  # Recommendation service configuration
+  # ----------------------------------------
+  # ----------------------------------------
+
+  recommendation_db:
+    image: neo4j:latest
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: "none"
+
+  recommendation_service:
+    image: recommendation_service
+    build: ./RecommendationService
+    volumes:
+      - './RecommendationService:/app'
+    environment:
+      - APP_SETTINGS=config.DevelopmentConfig
+      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+    depends_on:
+      - recommendation_db
+      - rabbitmq
+    links:
+      - recommendation_db
+      - rabbitmq
 
   # ----------------------------------------
   # ----------------------------------------
