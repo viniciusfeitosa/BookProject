@@ -1,7 +1,3 @@
 nameko
-sqlalchemy
-psycopg2
 pytest
 py2neo
-Flask
-Flask-Testing
