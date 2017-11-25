@@ -1,3 +1,5 @@
-nameko
+Flask
+Flask-Testing
 pytest
 py2neo
+pika

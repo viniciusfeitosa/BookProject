@@ -2,6 +2,7 @@ class BaseConfig:
     """Base configuration"""
     DEBUG = False
     TESTING = False
+    QUEUE = 'recommendation'
 
 
 class DevelopmentConfig(BaseConfig):

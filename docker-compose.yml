@@ -227,6 +227,7 @@ services:
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - DATABASE_URL=http://recommendation_db:7474/db/data
     depends_on:
       - recommendation_db
       - rabbitmq

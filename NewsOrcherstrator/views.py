@@ -2,12 +2,15 @@ import os
 import json
 import itertools
 
+from app import publisher
+
 from flask import Blueprint, jsonify, request
 from nameko.standalone.rpc import ClusterRpcProxy
 
 
 news = Blueprint('news', __name__)
 CONFIG_RPC = {'AMQP_URI': os.environ.get('QUEUE_HOST')}
+RECOMMENDATION_QUEUE = 'recommendation'
 
 
 @news.route('/<string:news_type>/<int:news_id>', methods=['GET'])
@@ -15,6 +18,14 @@ def get_single_news(news_type, news_id):
     """Get single user details"""
     try:
         response_object = rpc_get_news(news_type, news_id)
+        publisher.send_message(
+            'recommendation',
+            'news',
+            {
+                'user_id': request.headers.get('user_id'),
+                'response_object': response_object,
+            },
+        )
         return jsonify(response_object), 200
     except Exception as e:
         erro_response(e, 500)
