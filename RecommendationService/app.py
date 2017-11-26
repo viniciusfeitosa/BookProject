@@ -25,8 +25,8 @@ if __name__ == '__main__':
         app.run(host='0.0.0.0', port=5000)
     except KeyboardInterrupt:
         logging.info('Closing subscriber connection')
-        subscriber.close()
+        subscriber.stop()
     except Exception as ex:
         logging.info('Interrrupted subscriber connection')
         logging.error(str(ex))
-        subscriber.close()
+        subscriber.stop()

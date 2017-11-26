@@ -2,7 +2,7 @@ import os
 import json
 import itertools
 
-from app import publisher
+from publisher import Publisher
 
 from flask import Blueprint, jsonify, request
 from nameko.standalone.rpc import ClusterRpcProxy
@@ -18,6 +18,7 @@ def get_single_news(news_type, news_id):
     """Get single user details"""
     try:
         response_object = rpc_get_news(news_type, news_id)
+        publisher = Publisher.get_instance()
         publisher.send_message(
             'recommendation',
             'news',

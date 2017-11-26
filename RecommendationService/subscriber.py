@@ -14,7 +14,8 @@ class Subscriber:
     def __get_connection(self):
         if not self._connection:
             self._connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=os.environ.get('QUEUE_HOST')))
+                pika.URLParameters(os.environ.get('QUEUE_HOST'))
+            )
 
     def __get_channel(self):
         if not self._channel:

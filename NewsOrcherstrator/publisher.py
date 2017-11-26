@@ -10,7 +10,8 @@ class Publisher:
     def __get_connection(self):
         if not self._connection:
             self._connection = pika.BlockingConnection(
-                pika.ConnectionParameters(host=os.environ.get('QUEUE_HOST')))
+                pika.URLParameters(os.environ.get('QUEUE_HOST'))
+            )
 
     def __get_channel(self):
         if not self._channel:
@@ -27,6 +28,12 @@ class Publisher:
     def start(self):
         self.__get_connection()
         self.__get_channel()
+
+    @classmethod
+    def get_instance(cls):
+        if not cls._connection and not cls._channel:
+            cls.start()
+        return cls
 
     def stop(self):
         self.__close_channel()

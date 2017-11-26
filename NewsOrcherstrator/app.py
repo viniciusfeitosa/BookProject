@@ -15,8 +15,6 @@ app.config.from_object(app_settings)
 # register blueprints
 app.register_blueprint(news)
 
-publisher = None
-
 if __name__ == '__main__':
     try:
         logging.info('Starting publisher connection')
@@ -25,8 +23,8 @@ if __name__ == '__main__':
         app.run(host='0.0.0.0', port=5000)
     except KeyboardInterrupt:
         logging.info('Closing publisher connection')
-        publisher.close()
+        publisher.stop()
     except Exception as ex:
         logging.info('Interrrupted publisher connection')
         logging.error(str(ex))
-        publisher.close()
+        publisher.stop()
