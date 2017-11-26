@@ -6,6 +6,7 @@ from publisher import Publisher
 
 from flask import Blueprint, jsonify, request
 from nameko.standalone.rpc import ClusterRpcProxy
+import ipdb
 
 
 news = Blueprint('news', __name__)
@@ -17,12 +18,13 @@ RECOMMENDATION_QUEUE = 'recommendation'
 def get_single_news(news_type, news_id):
     """Get single user details"""
     try:
+        ipdb.set_trace()
         response_object = rpc_get_news(news_type, news_id)
-        publisher = Publisher.get_instance()
-        publisher.send_message(
-            'recommendation',
-            'news',
-            {
+        pub_instance = Publisher()
+        pub_instance.send_message(
+            queue=RECOMMENDATION_QUEUE,
+            routing_key='news',
+            data={
                 'user_id': request.headers.get('user_id'),
                 'response_object': response_object,
             },

@@ -2,6 +2,9 @@ import os
 import pika
 
 
+RECOMMENDATION_QUEUE = 'recommendation'
+
+
 def reader(channel, method, properties, body):
     print('Received {}'.format(body))
 
@@ -34,6 +37,8 @@ class Subscriber:
         self.__get_channel()
         if self._channel:
             self._channel.start_consuming()
+            while True:
+                self.read_message(reader, RECOMMENDATION_QUEUE)
 
     def stop(self):
         if self._channel:

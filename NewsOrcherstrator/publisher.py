@@ -2,6 +2,16 @@ import os
 import pika
 
 
+def singleton(class_):
+    instances = {}
+    def getinstance(*args, **kwargs):
+        if class_ not in instances:
+            instances[class_] = class_(*args, **kwargs)
+        return instances[class_]
+    return getinstance
+
+
+@singleton
 class Publisher:
     def __init__(self):
         self._connection = None
@@ -28,12 +38,6 @@ class Publisher:
     def start(self):
         self.__get_connection()
         self.__get_channel()
-
-    @classmethod
-    def get_instance(cls):
-        if not cls._connection and not cls._channel:
-            cls.start()
-        return cls
 
     def stop(self):
         self.__close_channel()

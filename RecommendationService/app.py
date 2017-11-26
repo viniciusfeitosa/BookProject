@@ -15,8 +15,6 @@ app.config.from_object(app_settings)
 # register blueprints
 app.register_blueprint(recommendation)
 
-subscriber = None
-
 if __name__ == '__main__':
     try:
         logging.info('Starting subscriber connection')
