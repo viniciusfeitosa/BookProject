@@ -69,9 +69,13 @@ def create_label_node(label):
 def create_recommendation(user_id, label):
     user_node = get_user_node(user_id)
     label_node = get_label_node(label)
-    rel = Relationship(
+    graph.create(Relationship(
         label_node,
         REL_TYPE,
         user_node,
-    )
-    graph.create(rel)
+    ))
+    graph.create(Relationship(
+        user_node,
+        REL_TYPE,
+        label_node,
+    ))
