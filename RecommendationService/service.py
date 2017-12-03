@@ -36,7 +36,7 @@ class Recommendation:
         except Exception as e:
             logging.error('RELATIONSHIP_ERROR: {}'.format(e))
 
-            
+
 class RecommendationApi:
     name = 'recommnedation_api'
 
