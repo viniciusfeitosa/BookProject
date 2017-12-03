@@ -2,12 +2,9 @@ import os
 import json
 import itertools
 
-from publisher import Publisher
 
 from flask import Blueprint, jsonify, request
 from nameko.standalone.rpc import ClusterRpcProxy
-import ipdb
-
 
 news = Blueprint('news', __name__)
 CONFIG_RPC = {'AMQP_URI': os.environ.get('QUEUE_HOST')}
@@ -18,17 +15,12 @@ RECOMMENDATION_QUEUE = 'recommendation'
 def get_single_news(news_type, news_id):
     """Get single user details"""
     try:
-        ipdb.set_trace()
         response_object = rpc_get_news(news_type, news_id)
-        pub_instance = Publisher()
-        pub_instance.send_message(
-            queue=RECOMMENDATION_QUEUE,
-            routing_key='news',
-            data={
-                'user_id': request.headers.get('user_id'),
-                'response_object': response_object,
-            },
-        )
+        with ClusterRpcProxy(CONFIG_RPC) as rpc:
+            rpc.recommendation.send.call_async({
+                'user_id': request.cookies.get('user_id'),
+                'news': response_object['news'],
+            })
         return jsonify(response_object), 200
     except Exception as e:
         erro_response(e, 500)
@@ -84,7 +76,7 @@ def get_all_news_per_type(news_type, num_page, limit):
         return erro_response(e, 500)
 
 
-@news.route('/<string:news_type>', methods=['POST'])
+@news.route('/<string:news_type>', methods=['POST', 'PUT'])
 def add_news(news_type):
     post_data = request.get_json()
     if not post_data:
@@ -92,18 +84,6 @@ def add_news(news_type):
     try:
         response_object = rpc_command(news_type, post_data)
         return jsonify(response_object), 201
-    except Exception as e:
-        return erro_response(e, 500)
-
-
-@news.route('/<string:news_type>', methods=['PUT'])
-def update_news(news_type):
-    post_data = request.get_json()
-    if not post_data:
-        return erro_response('Invalid Payload', 400)
-    try:
-        response_object = rpc_command(news_type, post_data)
-        return jsonify(response_object), 200
     except Exception as e:
         return erro_response(e, 500)
 

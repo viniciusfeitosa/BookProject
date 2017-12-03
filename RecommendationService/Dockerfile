@@ -6,8 +6,8 @@ WORKDIR /app
 
 RUN pip install -r requirements.txt
 
-ENTRYPOINT ["python"]
+ENTRYPOINT ["nameko"]
 
-CMD ["app.py"]
+CMD ["run", "--config",  "config.yaml", "service"]
 
 EXPOSE 5000

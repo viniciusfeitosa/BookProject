@@ -298,4 +298,8 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+.idea
+.project
+.pydevproject
+
 # End of https://www.gitignore.io/api/go,vim,venv,linux,macos,emacs,python,windows,virtualenv,visualstudiocode

@@ -1,5 +1,4 @@
-Flask
-Flask-Testing
 pytest
+nameko
 py2neo
-pika
+requests
