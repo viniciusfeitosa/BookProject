@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import requests
 
 from nameko.web.handlers import http
@@ -20,8 +21,10 @@ class Recommendation:
     @rpc
     def send(self, data):
         try:
+            user_service_route = os.getenv('USER_SERVICE_ROUTE')
             user = requests.get(
-                "http://172.17.0.1/user/{}".format(
+                "{}{}".format(
+                    user_service_route,
                     data['user_id'],
                 )
             )
