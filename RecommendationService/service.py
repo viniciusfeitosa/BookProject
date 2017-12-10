@@ -4,7 +4,7 @@ import os
 import requests
 
 from nameko.web.handlers import http
-from nameko.rpc import rpc
+from nameko.events import event_handler
 
 from models import (
     create_user_node,
@@ -18,8 +18,8 @@ from models import (
 class Recommendation:
     name = 'recommendation'
 
-    @rpc
-    def send(self, data):
+    @event_handler('recommendation_sender', 'receiver')
+    def receiver(self, data):
         try:
             user_service_route = os.getenv('USER_SERVICE_ROUTE')
             user = requests.get(

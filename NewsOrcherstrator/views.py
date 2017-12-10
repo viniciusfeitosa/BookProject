@@ -5,10 +5,10 @@ import itertools
 
 from flask import Blueprint, jsonify, request
 from nameko.standalone.rpc import ClusterRpcProxy
+from nameko.standalone.events import event_dispatcher
 
 news = Blueprint('news', __name__)
-CONFIG_RPC = {'AMQP_URI': os.environ.get('QUEUE_HOST')}
-RECOMMENDATION_QUEUE = 'recommendation'
+BROKER_CONFIG = {'AMQP_URI': os.environ.get('QUEUE_HOST')}
 
 
 @news.route('/<string:news_type>/<int:news_id>', methods=['GET'])
@@ -16,11 +16,11 @@ def get_single_news(news_type, news_id):
     """Get single user details"""
     try:
         response_object = rpc_get_news(news_type, news_id)
-        with ClusterRpcProxy(CONFIG_RPC) as rpc:
-            rpc.recommendation.send.call_async({
-                'user_id': request.cookies.get('user_id'),
-                'news': response_object['news'],
-            })
+        dispatcher = event_dispatcher(BROKER_CONFIG)
+        dispatcher('recommendation_sender', 'receiver', {
+            'user_id': request.cookies.get('user_id'),
+            'news': response_object['news'],
+        })
         return jsonify(response_object), 200
     except Exception as e:
         erro_response(e, 500)
@@ -97,7 +97,7 @@ def erro_response(e, code):
 
 
 def rpc_get_news(news_type, news_id):
-    with ClusterRpcProxy(CONFIG_RPC) as rpc:
+    with ClusterRpcProxy(BROKER_CONFIG) as rpc:
         if news_type == 'famous':
             news = rpc.query_famous.get_news(news_id)
         elif news_type == 'sports':
@@ -113,7 +113,7 @@ def rpc_get_news(news_type, news_id):
 
 
 def rpc_get_all_news(news_type, num_page, limit):
-    with ClusterRpcProxy(CONFIG_RPC) as rpc:
+    with ClusterRpcProxy(BROKER_CONFIG) as rpc:
         if news_type == 'famous':
             news = rpc.query_famous.get_all_news(num_page, limit)
         elif news_type == 'sports':
@@ -129,7 +129,7 @@ def rpc_get_all_news(news_type, num_page, limit):
 
 
 def rpc_command(news_type, data):
-    with ClusterRpcProxy(CONFIG_RPC) as rpc:
+    with ClusterRpcProxy(BROKER_CONFIG) as rpc:
         if news_type == 'famous':
             news = rpc.command_famous.add_news(data)
         elif news_type == 'sports':
