@@ -23,7 +23,7 @@ def get_single_news(news_type, news_id):
         })
         return jsonify(response_object), 200
     except Exception as e:
-        erro_response(e, 500)
+        return erro_response(e, 500)
 
 
 @news.route(

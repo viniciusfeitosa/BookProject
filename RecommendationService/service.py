@@ -18,20 +18,28 @@ from models import (
 class Recommendation:
     name = 'recommendation'
 
+    # declaring the receiver method as a handler to message broker
     @event_handler('recommendation_sender', 'receiver')
     def receiver(self, data):
         try:
+            # getting the URL to do a sequential HTTP request to UsersService
             user_service_route = os.getenv('USER_SERVICE_ROUTE')
+            # consuming data from UsersService using the requests lib
             user = requests.get(
                 "{}{}".format(
                     user_service_route,
                     data['user_id'],
                 )
             )
+            # serializing the UsersService data to JSON
             user = user.json()
+            # creating user node on Neo4j
             create_user_node(user)
+            # getting all tags read
             for label in data['news']['tags']:
+                # creating label node on Neo4j
                 create_label_node(label)
+                # creating the recommendation on Neo4j
                 create_recommendation(
                     user['id'],
                     label,
@@ -52,7 +60,7 @@ class RecommendationApi:
                 rel.end_node()
                 for rel in relationship_response
             ]
-            return 201, json.dumps(http_response)
+            return 200, json.dumps(http_response)
         except Exception as ex:
             error_response(500, ex)
 

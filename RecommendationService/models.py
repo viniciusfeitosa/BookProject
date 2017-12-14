@@ -1,7 +1,5 @@
 import os
 
-from datetime import datetime
-
 from py2neo import (
     Graph,
     Node,
