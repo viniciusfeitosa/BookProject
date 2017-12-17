@@ -63,9 +63,9 @@ services:
 
   orcherstrator_news_service:
     image: orcherstrator_news_service
-    build: ./NewsOrcherstrator
+    build: ./NewsOrchestrator
     volumes:
-      - './NewsOrcherstrator:/app'
+      - './NewsOrchestrator:/app'
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
