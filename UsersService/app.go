@@ -1,16 +1,23 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/viniciusfeitosa/BookProject/UsersService/user_service/server"
+
+	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
 // App is the struct with app configuration values
@@ -52,7 +59,7 @@ func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if value, err := a.Cache.getValue(id); err == nil && len(value) != 0 {
+	if value, err := a.getUserFromCache(id); err == nil {
 		log.Println("from cache")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -60,8 +67,8 @@ func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user := User{ID: id}
-	if err := user.get(a.DB); err != nil {
+	user, err := a.getUserFromDB(id)
+	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "User not found")
@@ -166,6 +173,70 @@ func (a *App) deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
+}
+
+func (a *App) getUserFromCache(id int) (string, error) {
+	if value, err := a.Cache.getValue(id); err == nil && len(value) != 0 {
+		return value, err
+	}
+	return "", errors.New("Not Found")
+}
+
+func (a *App) getUserFromDB(id int) (User, error) {
+	user := User{ID: id}
+	if err := user.get(a.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return user, err
+		default:
+			return user, err
+		}
+	}
+	return user, nil
+}
+
+func (a *App) runThriftServer(networkAddr string) {
+	transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
+	protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
+	serverTransport, err := thrift.NewTServerSocket(networkAddr)
+	if err != nil {
+		fmt.Println("Error!", err)
+		os.Exit(1)
+	}
+
+	handler := &userHandler{app: a}
+	processor := server.NewGetUserDataProcessor(handler)
+
+	server := thrift.NewTSimpleServer4(processor, serverTransport, transportFactory, protocolFactory)
+	fmt.Println("thrift server in", networkAddr)
+	server.Serve()
+}
+
+type userHandler struct {
+	app *App
+}
+
+func (handler *userHandler) GetUser(ctx context.Context, id int32) (*server.User, error) {
+	var user User
+	var err error
+	userServer := &server.User{}
+	if value, err := handler.app.getUserFromCache(int(id)); err == nil {
+		if err = json.Unmarshal([]byte(value), &user); err != nil {
+			return userServer, err
+		}
+		userServer.ID = int32(user.ID)
+		userServer.Email = user.Email
+		userServer.Name = user.Name
+		return userServer, err
+	}
+
+	if user, err = handler.app.getUserFromDB(int(id)); err == nil {
+		userServer.ID = int32(user.ID)
+		userServer.Email = user.Email
+		userServer.Name = user.Name
+		return userServer, err
+	}
+	return userServer, err
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {

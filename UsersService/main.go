@@ -2,16 +2,18 @@ package main
 
 import (
 	"flag"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 const (
 	createUsersQueue = "CREATE_USER"
 	updateUsersQueue = "UPDATE_USER"
 	deleteUsersQueue = "DELETE_USER"
+	networkAddr      = "127.0.0.1:9090"
 )
 
 func main() {
@@ -40,5 +42,6 @@ func main() {
 
 	a := App{}
 	a.Initialize(cache, db)
+	a.runThriftServer(networkAddr)
 	a.Run(":3000")
 }
