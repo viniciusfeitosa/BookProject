@@ -1,7 +1,5 @@
 import json
 import logging
-import os
-import requests
 
 from nameko.web.handlers import http
 from nameko.events import event_handler
@@ -25,10 +23,8 @@ class Recommendation:
     def receiver(self, data):
         try:
             # consuming data from UsersService using the requests lib
-            with UserClient as client:
-                user = client.get_user(int(data['user_id']))
-            # serializing the UsersService data to JSON
-            user = json.dumps(user)
+            with UserClient(data['user_id']) as response:
+                user = response
             # creating user node on Neo4j
             create_user_node(user)
             # getting all tags read
@@ -37,7 +33,7 @@ class Recommendation:
                 create_label_node(label)
                 # creating the recommendation on Neo4j
                 create_recommendation(
-                    user['id'],
+                    user.id,
                     label,
                 )
         except Exception as e:

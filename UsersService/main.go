@@ -13,7 +13,7 @@ const (
 	createUsersQueue = "CREATE_USER"
 	updateUsersQueue = "UPDATE_USER"
 	deleteUsersQueue = "DELETE_USER"
-	networkAddr      = "127.0.0.1:9090"
+	portAddr         = ":50051"
 )
 
 func main() {
@@ -42,6 +42,7 @@ func main() {
 
 	a := App{}
 	a.Initialize(cache, db)
-	a.runThriftServer(networkAddr)
+	go a.runGRPCServer(portAddr)
+	a.initializeRoutes()
 	a.Run(":3000")
 }

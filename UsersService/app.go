@@ -5,19 +5,18 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
+	"net"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/viniciusfeitosa/BookProject/UsersService/user_service/server"
-
-	"git.apache.org/thrift.git/lib/go/thrift"
+	pb "github.com/viniciusfeitosa/BookProject/UsersService/user_data"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 // App is the struct with app configuration values
@@ -33,7 +32,6 @@ func (a *App) Initialize(cache Cache, db *sqlx.DB) {
 
 	a.Cache = cache
 	a.Router = mux.NewRouter()
-	a.initializeRoutes()
 }
 
 func (a *App) initializeRoutes() {
@@ -195,43 +193,40 @@ func (a *App) getUserFromDB(id int) (User, error) {
 	return user, nil
 }
 
-func (a *App) runThriftServer(networkAddr string) {
-	transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
-	protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
-	serverTransport, err := thrift.NewTServerSocket(networkAddr)
+func (a *App) runGRPCServer(portAddr string) {
+	lis, err := net.Listen("tcp", portAddr)
 	if err != nil {
-		fmt.Println("Error!", err)
-		os.Exit(1)
+		log.Fatalf("failed to listen: %v", err)
 	}
-
-	handler := &userHandler{app: a}
-	processor := server.NewGetUserDataProcessor(handler)
-
-	server := thrift.NewTSimpleServer4(processor, serverTransport, transportFactory, protocolFactory)
-	fmt.Println("thrift server in", networkAddr)
-	server.Serve()
+	s := grpc.NewServer()
+	pb.RegisterGetUserDataServer(s, &userDataHandler{app: a})
+	reflection.Register(s)
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
 
-type userHandler struct {
+type userDataHandler struct {
 	app *App
 }
 
-func (handler *userHandler) GetUser(ctx context.Context, id int32) (*server.User, error) {
+func (handler *userDataHandler) GetUser(ctx context.Context, request *pb.UserDataRequest) (*pb.UserDataResponse, error) {
 	var user User
 	var err error
-	userServer := &server.User{}
-	if value, err := handler.app.getUserFromCache(int(id)); err == nil {
+	log.Println("entrei")
+	userServer := &pb.UserDataResponse{}
+	if value, err := handler.app.getUserFromCache(int(request.Id)); err == nil {
 		if err = json.Unmarshal([]byte(value), &user); err != nil {
 			return userServer, err
 		}
-		userServer.ID = int32(user.ID)
+		userServer.Id = int32(user.ID)
 		userServer.Email = user.Email
 		userServer.Name = user.Name
 		return userServer, err
 	}
 
-	if user, err = handler.app.getUserFromDB(int(id)); err == nil {
-		userServer.ID = int32(user.ID)
+	if user, err = handler.app.getUserFromDB(int(request.Id)); err == nil {
+		userServer.Id = int32(user.ID)
 		userServer.Email = user.Email
 		userServer.Name = user.Name
 		return userServer, err

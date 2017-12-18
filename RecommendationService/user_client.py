@@ -1,28 +1,20 @@
-from user_service.client import GetUserData
+import os
+import grpc
 
-from thrift.transport import TSocket
-from thrift.transport import TTransport
-from thrift.protocol import TBinaryProtocol
+import user_data_pb2
+import user_data_pb2_grpc
 
 
 class UserClient:
-    def __init__(self):
-        self.transport = TSocket.TSocket('127.0.0.1', 9090)
+    def __init__(self, user_id):
+        self.user_id = int(user_id)
+        self.channel = grpc.insecure_channel(os.getenv('USER_SERVICE_HOST'))
+        self.stub = user_data_pb2_grpc.GetUserDataStub(self.channel)
 
-        # Buffering is critical. Raw sockets are very slow
-        self.transport = TTransport.TBufferedTransport(self.transport)
+    def __enter__(self):
+        return self.stub.GetUser(
+            user_data_pb2.UserDataRequest(id=self.user_id)
+        )
 
-        # Wrap in a protocol
-        protocol = TBinaryProtocol.TBinaryProtocol(self.transport)
-
-        # Create a client to use the protocol encoder
-        self.client = GetUserData(protocol)
-
-        # Connect!
-        self.transport.open()
-
-    def __exit__(self):
-        self.transport.close()
-
-    def get_user(self, id):
-        return self.client.get_user(id)
+    def __exit__(self, type, value, traceback):
+        pass

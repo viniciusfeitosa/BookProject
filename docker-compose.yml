@@ -227,13 +227,15 @@ services:
     environment:
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
       - DATABASE_URL=http://recommendation_db:7474/db/data
-      - USER_SERVICE_ROUTE=http://172.17.0.1/user/
+      - USER_SERVICE_HOST=usersservice:50051
     depends_on:
       - recommendation_db
       - rabbitmq
+      - usersservice
     links:
       - recommendation_db
       - rabbitmq
+      - usersservice
 
   # ----------------------------------------
   # ----------------------------------------
