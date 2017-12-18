@@ -4,6 +4,11 @@
 	"GodepVersion": "v79",
 	"Deps": [
 		{
+			"ImportPath": "git.apache.org/thrift.git/lib/go/thrift",
+			"Comment": "hier-1476-g041c3c77",
+			"Rev": "041c3c777db9639b0a9195bc6aa1f935501fd506"
+		},
+		{
 			"ImportPath": "github.com/codegangsta/negroni",
 			"Comment": "v0.2.0-159-g079cf0c",
 			"Rev": "079cf0c7a6b0145ebcf4103ec90380370cd89917"
