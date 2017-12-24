@@ -210,28 +210,29 @@ type userDataHandler struct {
 	app *App
 }
 
+func (handler *userDataHandler) composeUser(user User) *pb.UserDataResponse {
+	return &pb.UserDataResponse{
+		Id:    int32(user.ID),
+		Email: user.Email,
+		Name:  user.Name,
+	}
+}
+
 func (handler *userDataHandler) GetUser(ctx context.Context, request *pb.UserDataRequest) (*pb.UserDataResponse, error) {
 	var user User
 	var err error
-	log.Println("entrei")
-	userServer := &pb.UserDataResponse{}
+
 	if value, err := handler.app.getUserFromCache(int(request.Id)); err == nil {
 		if err = json.Unmarshal([]byte(value), &user); err != nil {
-			return userServer, err
+			return nil, err
 		}
-		userServer.Id = int32(user.ID)
-		userServer.Email = user.Email
-		userServer.Name = user.Name
-		return userServer, err
+		return handler.composeUser(user), nil
 	}
 
 	if user, err = handler.app.getUserFromDB(int(request.Id)); err == nil {
-		userServer.Id = int32(user.ID)
-		userServer.Email = user.Email
-		userServer.Name = user.Name
-		return userServer, err
+		return handler.composeUser(user), nil
 	}
-	return userServer, err
+	return nil, err
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
