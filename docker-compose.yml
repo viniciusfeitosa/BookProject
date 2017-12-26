@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3'
 
 services:
 
@@ -10,22 +10,13 @@ services:
         - "5672:5672"
     restart: always
 
-  redis:
-    container_name: redis
-    image: redis
-    ports:
-     - "6379:6379"
-    healthcheck:
-      test: exit 0
-
   # ----------------------------------------
   # ----------------------------------------
   # Users service configuration
   # ----------------------------------------
   # ----------------------------------------
 
-  users-service-db:
-    container_name: users-service-db
+  users_service_db:
     build: ./UsersService/db
     ports:
       - 5432:5432  # expose ports - HOST:CONTAINER
@@ -35,25 +26,30 @@ services:
     healthcheck:
       test: exit 0
 
-  usersservice:
-    image: usersservice
+  users_queue:
+    image: redis
+    ports:
+     - "6379:6379"
+    healthcheck:
+      test: exit 0
+
+  users_service:
+    image: users_service
     build: ./UsersService
     environment:
-      - APP_RD_ADDRESS=redis:6379
+      - APP_RD_ADDRESS=users_queue:6379
       - APP_RD_AUTH=password
       - APP_RD_DBNAME=0
       - APP_SETTINGS=project.config.DevelopmentConfig
-      - DATABASE_URL=postgresql://postgres:postgres@users-service-db:5432/users_prod?sslmode=disable
-      - DATABASE_DEV_URL=postgresql://postgres:postgres@users-service-db:5432/users_dev?sslmode=disable
-      - DATABASE_TEST_URL=postgresql://postgres:postgres@users-service-db:5432/users_test?sslmode=disable
+      - DATABASE_URL=postgresql://postgres:postgres@users_service_db:5432/users_prod?sslmode=disable
+      - DATABASE_DEV_URL=postgresql://postgres:postgres@users_service_db:5432/users_dev?sslmode=disable
+      - DATABASE_TEST_URL=postgresql://postgres:postgres@users_service_db:5432/users_test?sslmode=disable
     depends_on:
-      users-service-db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - users_service_db
+      - users_queue
     links:
-      - users-service-db
-      - redis
+      - users_service_db
+      - users_queue
 
   # ----------------------------------------
   # ----------------------------------------
@@ -69,11 +65,10 @@ services:
     environment:
       - APP_SETTINGS=config.DevelopmentConfig
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
-    depends_on:
-      - famous_news_service
-      - rabbitmq
     links:
       - famous_news_service
+      - politics_news_service
+      - sports_news_service
       - rabbitmq
 
   # ----------------------------------------
@@ -98,6 +93,14 @@ services:
     healthcheck:
       test: exit 0
 
+  queue_famous:
+    image: rabbitmq
+    build: ./queue
+    ports:
+        - "15673:15672"
+        - "5673:5672"
+    restart: always
+
   famous_news_service:
     image: famous_news_service
     build: ./FamousNewsService
@@ -105,18 +108,18 @@ services:
       - './FamousNewsService:/app'
     environment:
       - QUERYBD_HOST=mongodb://querydb_famous:27017/
-      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - QUEUE_HOST=amqp://guest:guest@queue_famous
       - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_prod?sslmode=disable
       - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_dev?sslmode=disable
       - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_test?sslmode=disable
     depends_on:
       - querydb_famous
       - commanddb_famous
-      - rabbitmq
+      - queue_famous
     links:
       - querydb_famous
       - commanddb_famous
-      - rabbitmq
+      - queue_famous
 
 
   # ----------------------------------------
@@ -141,6 +144,14 @@ services:
     healthcheck:
       test: exit 0
 
+  queue_politics:
+    image: rabbitmq
+    build: ./queue
+    ports:
+        - "15674:15672"
+        - "5674:5672"
+    restart: always
+
   politics_news_service:
     image: politics_news_service
     build: ./PoliticsNewsService
@@ -148,18 +159,18 @@ services:
       - './PoliticsNewsService:/app'
     environment:
       - QUERYBD_HOST=mongodb://querydb_politics:27017/
-      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - QUEUE_HOST=amqp://guest:guest@queue_politics
       - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_prod?sslmode=disable
       - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_dev?sslmode=disable
       - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_test?sslmode=disable
     depends_on:
       - querydb_politics
       - commanddb_politics
-      - rabbitmq
+      - queue_politics
     links:
       - querydb_politics
       - commanddb_politics
-      - rabbitmq
+      - queue_politics
 
 
   # ----------------------------------------
@@ -184,6 +195,14 @@ services:
     healthcheck:
       test: exit 0
 
+  queue_sports:
+    image: rabbitmq
+    build: ./queue
+    ports:
+        - "15675:15672"
+        - "5675:5672"
+    restart: always
+
   sports_news_service:
     image: sports_news_service
     build: ./SportsNewsService
@@ -191,18 +210,18 @@ services:
       - './SportsNewsService:/app'
     environment:
       - QUERYBD_HOST=mongodb://querydb_sports:27017/
-      - QUEUE_HOST=amqp://guest:guest@rabbitmq
+      - QUEUE_HOST=amqp://guest:guest@queue_sports
       - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_prod?sslmode=disable
       - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_dev?sslmode=disable
       - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_test?sslmode=disable
     depends_on:
       - querydb_sports
       - commanddb_sports
-      - rabbitmq
+      - queue_sports
     links:
       - querydb_sports
       - commanddb_sports
-      - rabbitmq
+      - queue_sports
 
 
   # ----------------------------------------
@@ -227,15 +246,15 @@ services:
     environment:
       - QUEUE_HOST=amqp://guest:guest@rabbitmq
       - DATABASE_URL=http://recommendation_db:7474/db/data
-      - USER_SERVICE_HOST=usersservice:50051
+      - USER_SERVICE_HOST=users_service:50051
     depends_on:
       - recommendation_db
       - rabbitmq
-      - usersservice
+      - users_service
     links:
       - recommendation_db
       - rabbitmq
-      - usersservice
+      - users_service
 
   # ----------------------------------------
   # ----------------------------------------
@@ -243,11 +262,11 @@ services:
   # ----------------------------------------
   # ----------------------------------------
 
-  proxy:
-    container_name: loadbalance
+  loadbalance:
     build: ./nginx
     ports:
       - "80:80"
     links:
-      - usersservice
+      - users_service
       - orcherstrator_news_service
+      - recommendation_service
