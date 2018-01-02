@@ -23,7 +23,7 @@ def get_single_news(news_type, news_id):
         })
         return jsonify(response_object), 200
     except Exception as e:
-        return erro_response(e, 500)
+        return error_response(e, 500)
 
 
 @news.route(
@@ -57,14 +57,14 @@ def get_all_news(num_page, limit):
         }
         return jsonify(response_object), 200
     except Exception as e:
-        return erro_response(e, 500)
+        return error_response(e, 500)
 
 
 @news.route(
     '/<string:news_type>/<int:num_page>/<int:limit>',
     methods=['GET'])
-def get_all_news_per_type(news_type, num_page, limit):
-    """Get all users"""
+def get_all_news_by_type(news_type, num_page, limit):
+    """Get all new by type"""
     try:
         response_object = rpc_get_all_news(
             news_type,
@@ -73,22 +73,22 @@ def get_all_news_per_type(news_type, num_page, limit):
         )
         return jsonify(response_object), 200
     except Exception as e:
-        return erro_response(e, 500)
+        return error_response(e, 500)
 
 
 @news.route('/<string:news_type>', methods=['POST', 'PUT'])
 def add_news(news_type):
     post_data = request.get_json()
     if not post_data:
-        return erro_response('Invalid payload', 400)
+        return error_response('Invalid payload', 400)
     try:
         response_object = rpc_command(news_type, post_data)
         return jsonify(response_object), 201
     except Exception as e:
-        return erro_response(e, 500)
+        return error_response(e, 500)
 
 
-def erro_response(e, code):
+def error_response(e, code):
     response_object = {
         'status': 'fail',
         'message': str(e),
@@ -105,7 +105,7 @@ def rpc_get_news(news_type, news_id):
         elif news_type == 'politics':
             news = rpc.query_politics.get_news(news_id)
         else:
-            return erro_response('Invalid News type', 400)
+            return error_response('Invalid News type', 400)
         return {
             'status': 'success',
             'news': json.loads(news)
@@ -121,7 +121,7 @@ def rpc_get_all_news(news_type, num_page, limit):
         elif news_type == 'politics':
             news = rpc.query_politics.get_all_news(num_page, limit)
         else:
-            return erro_response('Invalid News type', 400)
+            return error_response('Invalid News type', 400)
         return {
             'status': 'success',
             'news': json.loads(news)
@@ -137,7 +137,7 @@ def rpc_command(news_type, data):
         elif news_type == 'politics':
             news = rpc.command_politics.add_news(data)
         else:
-            return erro_response('Invalid News type', 400)
+            return error_response('Invalid News type', 400)
         return {
             'status': 'success',
             'news': news,

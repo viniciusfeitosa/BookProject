@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"log"
 	"os"
+
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 const tableCreationQuery = `CREATE TABLE IF NOT EXISTS users
@@ -18,20 +19,13 @@ CONSTRAINT users_pkey PRIMARY KEY (id)
 )`
 
 func main() {
-	connections := []string{
-		os.Getenv("DATABASE_TEST_URL"),
-		os.Getenv("DATABASE_DEV_URL"),
-		os.Getenv("DATABASE_URL"),
-	}
 	fmt.Println("Starting User migration")
-	for _, connection := range connections {
-		db, err := sqlx.Open("postgres", connection)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if _, err = db.Exec(tableCreationQuery); err != nil {
-			log.Fatal(err)
-		}
+	db, err := sqlx.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Exec(tableCreationQuery); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Println("Finished User migration")
 }

@@ -52,7 +52,7 @@ class RecommendationApi:
                 rel.end_node()
                 for rel in relationship_response
             ]
-            return 200, json.dumps(http_response)
+            return 200, {'Content-Type': 'application/json'}, json.dumps(http_response)
         except Exception as ex:
             error_response(500, ex)
 
@@ -65,7 +65,7 @@ class RecommendationApi:
                 rel.end_node()
                 for rel in relationship_response
             ]
-            return 200, json.dumps(http_response)
+            return 200, {'Content-Type': 'application/json'}, json.dumps(http_response)
         except Exception as ex:
             error_response(500, ex)
 
@@ -75,4 +75,4 @@ def error_response(code, ex):
         'status': 'fail',
         'message': str(ex),
     }
-    return code, json.dumps(response_object)
+    return code, {'Content-Type': 'application/json'}, json.dumps(response_object)

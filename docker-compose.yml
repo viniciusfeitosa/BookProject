@@ -41,9 +41,7 @@ services:
       - APP_RD_AUTH=password
       - APP_RD_DBNAME=0
       - APP_SETTINGS=project.config.DevelopmentConfig
-      - DATABASE_URL=postgresql://postgres:postgres@users_service_db:5432/users_prod?sslmode=disable
-      - DATABASE_DEV_URL=postgresql://postgres:postgres@users_service_db:5432/users_dev?sslmode=disable
-      - DATABASE_TEST_URL=postgresql://postgres:postgres@users_service_db:5432/users_test?sslmode=disable
+      - DATABASE_URL=postgresql://postgres:postgres@users_service_db:5432/users_dev?sslmode=disable
     depends_on:
       - users_service_db
       - users_queue
@@ -109,9 +107,7 @@ services:
     environment:
       - QUERYBD_HOST=mongodb://querydb_famous:27017/
       - QUEUE_HOST=amqp://guest:guest@queue_famous
-      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_prod?sslmode=disable
-      - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_dev?sslmode=disable
-      - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_test?sslmode=disable
+      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_famous:5432/news_dev?sslmode=disable
     depends_on:
       - querydb_famous
       - commanddb_famous
@@ -160,9 +156,7 @@ services:
     environment:
       - QUERYBD_HOST=mongodb://querydb_politics:27017/
       - QUEUE_HOST=amqp://guest:guest@queue_politics
-      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_prod?sslmode=disable
-      - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_dev?sslmode=disable
-      - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_test?sslmode=disable
+      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_politics:5432/news_dev?sslmode=disable
     depends_on:
       - querydb_politics
       - commanddb_politics
@@ -211,9 +205,7 @@ services:
     environment:
       - QUERYBD_HOST=mongodb://querydb_sports:27017/
       - QUEUE_HOST=amqp://guest:guest@queue_sports
-      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_prod?sslmode=disable
-      - COMMANDDB_DEV_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_dev?sslmode=disable
-      - COMMANDDB_TEST_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_test?sslmode=disable
+      - COMMANDDB_HOST=postgresql://postgres:postgres@commanddb_sports:5432/news_dev?sslmode=disable
     depends_on:
       - querydb_sports
       - commanddb_sports

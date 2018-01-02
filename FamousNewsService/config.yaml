@@ -1,7 +1,7 @@
 AMQP_URI: 'amqp://guest:guest@rabbitmq'
 
 DB_URIS:
-    "command_famous:Base": ${COMMANDDB_DEV_HOST}
+    "command_famous:Base": ${COMMANDDB_HOST}
 
 LOGGING:
     version: 1

@@ -3,8 +3,6 @@ package main_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"github.com/jmoiron/sqlx"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -12,13 +10,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/viniciusfeitosa/BookProject/UsersService"
+	"github.com/jmoiron/sqlx"
 )
 
 var a main.App
 
 func TestMain(m *testing.M) {
-	connectionString := os.Getenv("DATABASE_TEST_URL")
+	connectionString := os.Getenv("DATABASE_URL")
 	db, err := sqlx.Open("postgres", connectionString)
 	if err != nil {
 		log.Fatal(err)

@@ -29,7 +29,7 @@ func main() {
 	flag.Parse()
 	cache.Pool = cache.NewCachePool()
 
-	connectionString := os.Getenv("DATABASE_DEV_URL")
+	connectionString := os.Getenv("DATABASE_URL")
 
 	db, err := sqlx.Open("postgres", connectionString)
 	if err != nil {
