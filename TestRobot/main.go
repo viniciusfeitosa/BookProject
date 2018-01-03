@@ -50,8 +50,8 @@ type RecommendationByUser struct {
 	ID string `json:"id"`
 }
 
-// EndToEndTestMininalFlow - simulate a minimal business application
-func EndToEndTestMininalFlow() {
+// StartToEndTestMininalFlow - simulate a minimal business application
+func StartToEndTestMininalFlow() {
 	log.Println("### Starting minimal validation flow ###")
 	log.Println("Validating user creation")
 	reqBody := []byte(`{
@@ -191,5 +191,5 @@ func recommendationIntegrityValidator(recommendations []RecommendationByUser) er
 }
 
 func main() {
-	EndToEndTestMininalFlow()
+	StartToEndTestMininalFlow()
 }
