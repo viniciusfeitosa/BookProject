@@ -40,6 +40,7 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/{id:[0-9]+}", a.getUser).Methods("GET")
 	a.Router.HandleFunc("/{id:[0-9]+}", a.updateUser).Methods("PUT")
 	a.Router.HandleFunc("/{id:[0-9]+}", a.deleteUser).Methods("DELETE")
+	a.Router.HandleFunc("/healthcheck", a.healthcheck).Methods("GET")
 }
 
 // Run initialize the server
@@ -47,6 +48,28 @@ func (a *App) Run(addr string) {
 	n := negroni.Classic()
 	n.UseHandler(a.Router)
 	log.Fatal(http.ListenAndServe(addr, n))
+}
+
+func (a *App) healthcheck(w http.ResponseWriter, r *http.Request) {
+	var err error
+	c := a.Cache.Pool.Get()
+	defer c.Close()
+
+	// Check Cache
+	_, err = c.Do("PING")
+
+	// Check DB
+	err = a.DB.Ping()
+
+	w.Header().Set("Content-Type", "text/plain")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("FAIL"))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("SUCCESS"))
+	return
 }
 
 func (a *App) getUser(w http.ResponseWriter, r *http.Request) {
