@@ -7,6 +7,8 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+
+	raven "github.com/getsentry/raven-go"
 )
 
 const (
@@ -15,6 +17,10 @@ const (
 	deleteUsersQueue = "DELETE_USER"
 	portAddr         = ":50051"
 )
+
+func init() {
+	raven.SetDSN("change by keep")
+}
 
 func main() {
 	var numWorkers int

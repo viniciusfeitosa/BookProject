@@ -8,9 +8,11 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/codegangsta/negroni"
+	raven "github.com/getsentry/raven-go"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -41,6 +43,7 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/{id:[0-9]+}", a.updateUser).Methods("PUT")
 	a.Router.HandleFunc("/{id:[0-9]+}", a.deleteUser).Methods("DELETE")
 	a.Router.HandleFunc("/healthcheck", a.healthcheck).Methods("GET")
+	a.Router.HandleFunc("/sentryerr", a.sentryerr).Methods("GET")
 }
 
 // Run initialize the server
@@ -48,6 +51,17 @@ func (a *App) Run(addr string) {
 	n := negroni.Classic()
 	n.UseHandler(a.Router)
 	log.Fatal(http.ListenAndServe(addr, n))
+}
+
+func (a *App) sentryerr(w http.ResponseWriter, r *http.Request) {
+	_, err := os.Open("filename.ext")
+	if err != nil {
+		raven.CaptureErrorAndWait(err, nil)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte("OK"))
+	return
 }
 
 func (a *App) healthcheck(w http.ResponseWriter, r *http.Request) {
@@ -61,14 +75,11 @@ func (a *App) healthcheck(w http.ResponseWriter, r *http.Request) {
 	// Check DB
 	err = a.DB.Ping()
 
-	w.Header().Set("Content-Type", "text/plain")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("FAIL"))
+		http.Error(w, "CRITICAL", http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("SUCCESS"))
+	w.Write([]byte("OK"))
 	return
 }
 
